@@ -3,7 +3,7 @@ import sys
 import platform
 import streamlit as st
 
-from app import sidebar_menu
+from streamlit_app import sidebar_menu
 
 def get_info():
     return {
