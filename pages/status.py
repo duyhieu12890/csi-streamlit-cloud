@@ -2,7 +2,7 @@ import os
 import sys
 import platform
 import streamlit as st
-
+# import firebase
 from streamlit_app import sidebar_menu
 
 def get_info():
@@ -13,8 +13,7 @@ def get_info():
         "system_memory": f"{os.sysconf('SC_PAGE_SIZE') * os.sysconf('SC_PHYS_PAGES') / (1024. ** 3):.2f} GB",
     }
 
-def check_database():
-
+# def check_database():
 
 def status():
     st.title("Trạng thái ứng dụng")
@@ -32,7 +31,8 @@ def status():
     )
 
     st.markdown("""Components:
-    - 
+    
+    **Firebase API:** 
     """)
 
 st.set_page_config(

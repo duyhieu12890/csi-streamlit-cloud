@@ -1,6 +1,6 @@
 import os
 import streamlit as st
-from app import sidebar_menu
+from streamlit_app import sidebar_menu
 
 def chat():
     st.title("Chat with AI")
