@@ -10,7 +10,7 @@ def sidebar_menu():
 
     st.sidebar.markdown("<hr style='padding: 0 0 8px 0; margin: 8px 0; border: none; border-top: 1px solid #ccc;'/>", unsafe_allow_html=True)
 
-    st.sidebar.page_link("app.py", label="Trang chủ", icon="🏠")
+    st.sidebar.page_link("streamlit_app.py", label="Trang chủ", icon="🏠")
     st.sidebar.page_link("pages/status.py", label="Trạng thái ứng dụng", icon="🔧")
 
     st.sidebar.markdown("<hr style='margin: 8px 0; border: none; border-top: 1px solid #ccc;'/>", unsafe_allow_html=True)
