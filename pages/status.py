@@ -19,7 +19,7 @@ def get_info():
         "system_memory": f"{os.sysconf('SC_PAGE_SIZE') * os.sysconf('SC_PHYS_PAGES') / (1024. ** 3):.2f} GB",
     }
 
-sign = ["🟡 Waiting", "🔴 Downed", "🟢 Alive", "🔴 Get API Failed"]
+sign = ["🟡 Waiting", "🔴 Downed", "🟢 Alive", "🔴 Get API Failed", "🟡 Host alive, Runtime not work"]
 
 
 global IS_FIREBASE_WORK 
@@ -27,7 +27,7 @@ global IS_MODEL_HOST_WORK
 IS_FIREBASE_WORK = 0
 IS_MODEL_HOST_WORK = 0
 IS_LLM_HOST_WORK = 0
-
+global host_info
 
 
 
@@ -37,6 +37,7 @@ def render_status():
     **Firebase API:** `{sign[IS_FIREBASE_WORK]}`  
     **Model Runtime API:** `{sign[IS_MODEL_HOST_WORK]}`  
     **LLM Runtime API:** `{sign[IS_LLM_HOST_WORK]}`  
+    
     """)
 
 
@@ -44,6 +45,7 @@ def try_fetch():
     global IS_FIREBASE_WORK
     global IS_MODEL_HOST_WORK
     global IS_LLM_HOST_WORK
+    global host_info
 
     try:
         ref = db.reference('/')
@@ -61,14 +63,16 @@ def try_fetch():
             data['llm'] + "/status",
             timeout=5
         )
-        # print(response)
+        # print(response.status_code)
         if response.status_code == 200:
             result = response.json()
+            info_host = result
             print(result)
             IS_MODEL_HOST_WORK = 2
+        elif response.status_code == 502:
+            IS_MODEL_HOST_WORK = 4
         else:
             IS_MODEL_HOST_WORK = 1
-        
         IS_LLM_HOST_WORK = 3
 
 
@@ -93,7 +97,7 @@ st.markdown(f"""
 ### Streamlit Host Information:
 **Hê điều hành:** `{get_info()['os_info']}`  
 **Phiên bản Streamlit:** `{st.__version__}`  
-**Phiên bản Python:** `{get_info()['python_version']}`
+**Phiên bản Python:** `{get_info()['python_version']}`  
 **Bộ nhớ hệ thống:** `{get_info()['system_memory']}`  
 **CPU:** `{os.cpu_count()} cores`  
 """
