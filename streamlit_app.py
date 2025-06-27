@@ -1,12 +1,22 @@
 import os
 import streamlit as st
+import firebase_admin
+import json
 
+def load_firebase():
+    # Parse chuỗi JSON từ secrets thành dict
+    firebase_creds = json.loads(st.secrets["FIREBASE_SECRETS_STRING"])
+
+    # Tạo credentials từ dict
+    cred = firebase_admin.credentials.Certificate(firebase_creds)
+
+    # Khởi tạo Firebase
+    firebase_admin.initialize_app(cred, {
+        'databaseURL': st.secrets["DATABASE_URL"]
+    })
 
 def sidebar_menu():
-
-
     st.sidebar.image("images/mindx_light.png", use_container_width=True)
-
 
     st.sidebar.markdown("<hr style='padding: 0 0 8px 0; margin: 8px 0; border: none; border-top: 1px solid #ccc;'/>", unsafe_allow_html=True)
 
@@ -69,6 +79,16 @@ def sidebar_menu():
             st.switch_page("pages/profile.py")
         if st.sidebar.button("Cài đặt", key="settings_btn", use_container_width=True):
             st.switch_page("pages/settings.py")
+
+class default_firebase():
+    def __init__(self):
+        self.ref = firebase_admin.db.reference("/")
+        self.data = self.ref.get()
+
+
+    
+    def set_data(self, key, value):
+        pass     
 
 
 if __name__ == "__main__":
