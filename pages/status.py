@@ -59,21 +59,26 @@ def try_fetch():
         ref = db.reference("/url")
         data = ref.get()
         # print(data)
-        response = requests.get(
-            data['llm'] + "/status",
-            timeout=5
-        )
-        # print(response.status_code)
-        if response.status_code == 200:
-            result = response.json()
-            info_host = result
-            print(result)
-            IS_MODEL_HOST_WORK = 2
-        elif response.status_code == 502:
-            IS_MODEL_HOST_WORK = 4
-        else:
+        try:
+            response = requests.get(
+                data['llm'] + "/status",
+                timeout=5
+            )
+            # print(response.status_code)
+            if response.status_code == 200:
+                result = response.json()
+                info_host = result
+                print(result)
+                IS_MODEL_HOST_WORK = 2
+            elif response.status_code == 502:
+                IS_MODEL_HOST_WORK = 4
+            else:
+                IS_MODEL_HOST_WORK = 1
+        except:
             IS_MODEL_HOST_WORK = 1
+        
         IS_LLM_HOST_WORK = 3
+
 
 
 
