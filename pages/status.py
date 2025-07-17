@@ -10,6 +10,7 @@ import streamlit_app as app
 import threading
 import time
 import requests
+import modules.libbase as libbase
 
 def get_info():
     return {
@@ -61,16 +62,15 @@ def try_fetch():
         # print(data)
         try:
             response = requests.get(
-                data['llm'] + "/status",
+                libbase.get_root_db().get()["url"]["uecfood256"] + "/isalive",
                 timeout=5
             )
             # print(response.status_code)
             if response.status_code == 200:
                 result = response.json()
                 info_host = result
-                print(result)
                 IS_MODEL_HOST_WORK = 2
-            elif response.status_code == 502:
+            elif response.status_code == 502: 
                 IS_MODEL_HOST_WORK = 4
             else:
                 IS_MODEL_HOST_WORK = 1
@@ -90,7 +90,7 @@ st.set_page_config(
 )
 
 if not firebase_admin._apps:
-    app.load_firebase()
+    libbase.load_firebase()
 
 sidebar_menu()
 
