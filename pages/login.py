@@ -28,7 +28,7 @@ def signup():
 
     if st.button("Đăng nhập"):
         try:
-            user = app.auth().sign_in_with_email_and_password(email, password)
+            user = libbase.auth().sign_in_with_email_and_password(email, password)
             st.success("Đăng nhập thành công!")
             st.session_state["user"] = user
             st.session_state["IS_USER_LOGGED"] = True
