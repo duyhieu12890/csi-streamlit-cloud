@@ -6,3 +6,5 @@ streamlit-extras
 requests
 pandas
 plotly
+pyrebase4
+google-generativeai

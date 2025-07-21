@@ -15,7 +15,8 @@ import plotly.graph_objects as go
 from datetime import datetime
 import time
 import datetime
-from data_demo.metric import history
+import modules.libbase as libbase
+# from data_demo.metric import history
 components.html(
 """
     <script>
@@ -25,6 +26,11 @@ components.html(
     </script>
 """, height=0
 )
+
+
+if not st.session_state.get("IS_USER_LOGGED", False):
+    st.warning("Bạn cần đăng nhập để sử dụng tính năng dashboard")
+    st.stop()
 
 metrics = [
     {
@@ -77,15 +83,20 @@ st.set_page_config(
     page_icon="📈",
     initial_sidebar_state="collapsed"
 )
+try:
+    raw_data = libbase.get_root_db().child("users").child(libbase.get_userId_logged()).child("dashboard").get()
+    history = raw_data if raw_data else {}
+except Exception as e:
+    print("Firebase error:", e)
+    history = {}
 
-
-
-def update(id:str, value, type):
-    print("User updated ", type, " key ", id," with value:", value)
-
+def update(id:str, value):
+    print("User updated key", id,"with value:", value)
+    libbase.get_root_db().child("users").child(libbase.get_userId_logged()).child("dashboard").child(id).child(str(datetime.date.today().year)).child(str(datetime.date.today().month)).child(str(datetime.date.today().day)).set(value)
+    st.toast("✅ Cập nhật thành công")
+    time.sleep(3)
+    st.rerun()
 root = st.empty()
-
-
 
 def detail():
     pass
@@ -147,10 +158,38 @@ def dashboard():
                     day_show_value = 5
                 today_str = datetime.date.today().isoformat()
                 raw_date = datetime.date.today()
-                metric["history"] = builddata.build_range(builddata.calulate_begin_from_end(today_str, day_show_value), today_str , history[metric["id"]], default_none=0)
+                metric_id = history.get(metric["id"],"None")
+                metric_data = history.get(metric["id"], {}) if history else {}
+
+
+                metric["history"] = builddata.build_range(
+                    builddata.calulate_begin_from_end(today_str, day_show_value),
+                    today_str,
+                    metric_data,
+                    default_none=0
+                )
+
+                st.session_state[f"today_user_input_type_{metric_id}"] = (
+                    True if metric_data.get(str(raw_date.year), {})
+                                        .get(str(raw_date.month), {})
+                                        .get(str(raw_date.day)) else False
+                )
+
+                metric["history"] = builddata.build_range(
+                    builddata.calulate_begin_from_end(today_str, day_show_value),
+                    today_str,
+                    metric_data,
+                    default_none=0
+                )
+
                 metric["value"] = metric["history"][-1] if metric["history"] else 0
                 metric["target"] = metric.get("target", 0)
-                st.session_state[f"today_user_input_type_{metric['id']}"] = True if history[metric["id"]].get(str(raw_date.year), {}).get(str(raw_date.month), {}).get(str(raw_date.day)) else False
+                st.session_state[f"today_user_input_type_{metric['id']}"] = (
+                    True if metric_data.get(str(raw_date.year), {})
+                                    .get(str(raw_date.month), {})
+                                    .get(str(raw_date.day)) else False
+                )
+
 
 
                 st.markdown(
@@ -175,8 +214,8 @@ def dashboard():
                     """,
                     unsafe_allow_html=True
                 )
-
-                if all(isinstance(x, (int, float, np.integer, np.floating)) for x in metric["history"]):
+                    
+                if all(isinstance(x, (int, float, np.integer, np.floating)) for x in metric["history"]) and not metric_id == "bloodpressure":
                     con_cols = st.columns([2, 3], gap="large")
                     with con_cols[0]:
                         st.write("Chọn mốc thời gian:")
@@ -201,10 +240,20 @@ def dashboard():
                         else:
                             day_show_value = 5
 
+                    # df = pd.DataFrame({
+                    #     "Ngày": [i for i in builddata.build_list_date(builddata.calulate_begin_from_end(today_str, day_show_value), today_str)],
+                    #     "Giá trị": builddata.build_range(builddata.calulate_begin_from_end(today_str, day_show_value), today_str, history[metric["id"]], default_none=0)
+                    # })
                     df = pd.DataFrame({
                         "Ngày": [i for i in builddata.build_list_date(builddata.calulate_begin_from_end(today_str, day_show_value), today_str)],
-                        "Giá trị": builddata.build_range(builddata.calulate_begin_from_end(today_str, day_show_value), today_str, history[metric["id"]], default_none=0)
+                        "Giá trị": builddata.build_range(
+                            builddata.calulate_begin_from_end(today_str, day_show_value),
+                            today_str,
+                            history.get(metric["id"], {}),
+                            default_none=0
+                        )
                     })
+
                     fig = px.bar(df, x="Ngày", y="Giá trị", title=metric["title"])
 
                     data_min = min(metric["history"])
@@ -247,7 +296,7 @@ def dashboard():
                         key=f"input_target_{idx}_0"
                     )
                     if st.button("Lưu", type="secondary", key=f"input_target_type_{metric["id"]}"):
-                        update(metric['id'], new_target, "target")
+                        update(metric['id'], new_target)
 
                 with btn_cols[1].popover("✏️ Chỉnh sửa" if st.session_state.get(f"today_user_input_type_{metric['id']}", False)  else "➕ Nhập dữ liệu", use_container_width=True):
                     new_target = st.number_input(
@@ -255,7 +304,7 @@ def dashboard():
                         key=f"input_target_{idx}_1"
                     )
                     if st.button("Lưu", type="secondary", key=f"input_value_type_{metric['id']}"):
-                        update(metric['id'], new_target,"value")
+                        update(metric['id'], new_target)
 
         if idx % 2 == 1 and idx != len(metrics) - 1:
             cols = st.columns([1, 1], gap="medium")

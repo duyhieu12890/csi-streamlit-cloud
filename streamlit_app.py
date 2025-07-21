@@ -4,6 +4,7 @@ import firebase_admin
 import json
 import pyrebase
 import modules.libbase as libbase
+import time
 
 # def history_update():
 sidebar = st.container()
@@ -50,8 +51,9 @@ def sidebar_menu():
 
             st.sidebar.markdown("#### Chatbox AI / History", )
             if st.session_state.get("IS_USER_LOGGED", False):
-                st.sidebar.button("Tạo hội thoại mới", key="new_chat_btn", use_container_width=True, icon="➕")
-                st.session_state["chatbox_switch_from"] = "create_new_chat"
+                if st.sidebar.button("Tạo hội thoại mới", key=f"new_chat_btn", use_container_width=True, icon="➕"):
+                    st.session_state["chatbox_switch_from"] = "create_new_chat"
+                    st.switch_page("pages/chat.py")
 
                 if st.sidebar.button("Xem lịch sử hội thoại >", key="view_history_btn", use_container_width=True):
                     st.session_state["showing_history"] = True
@@ -66,7 +68,6 @@ def sidebar_menu():
 
             st.sidebar.markdown("<hr style='margin: 8px 0; border: none; border-top: 1px solid #ccc;'/>", unsafe_allow_html=True)
             is_logged_in = st.session_state.get("IS_USER_LOGGED", False)
-            user_name = st.session_state.get("user_name", "Guest")
             if not is_logged_in:
 
                 guest_col1, guest_col2 = st.sidebar.columns([1, 3])
@@ -85,14 +86,13 @@ def sidebar_menu():
                     st.switch_page("pages/signin.py")
 
             else:
+                user_name = libbase.get_root_db().child("users").child(libbase.get_userId_logged()).get()["name"]
                 user_col1, user_col2 = st.sidebar.columns([1, 3])
                 with user_col1:
                     st.image("https://cdn-icons-png.flaticon.com/512/3135/3135715.png", width=48)
                 with user_col2:
-                    st.markdown(f"**{user_name}**")
+                    st.markdown(f"## {user_name}")
                 
-                if st.sidebar.button("Xem thông tin cá nhân", key="profile_btn", use_container_width=True):
-                    st.switch_page("pages/profile.py")
                 if st.sidebar.button("Cài đặt", key="settings_btn", use_container_width=True):
                     st.switch_page("pages/settings.py")
     
@@ -191,9 +191,9 @@ if __name__ == "__main__":
         </div>
         """.format(user_name), unsafe_allow_html=True)
 
-        fun_col1, fun_col2 = st.columns([1, 2])
+        fun_col1, fun_col2 = st.columns([1, 3])
         with fun_col1:
-            st.image("https://cdn.pixabay.com/photo/2017/01/31/13/14/health-2022514_1280.png", width=220)
+            st.image("images/health_care_intro.png", width=300, channels="RGB")
         with fun_col2:
             st.success("🌟 Đã đăng nhập thành công! Hãy khám phá các tính năng chăm sóc sức khỏe cá nhân của bạn ở menu bên trái.")
             st.markdown("""

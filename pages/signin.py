@@ -47,8 +47,9 @@ def login():
             st.error("Mật khẩu không khớp!")
         else:
             # try:
-                app.auth().create_user_with_email_and_password(email, password)
+                user = libbase.auth().create_user_with_email_and_password(email, password)
                 st.success("Đăng ký thành công! Vui lòng đăng nhập.")
+                libbase.get_root_db().child("users").child(user["LocalId"]).set({"name": name, "email": email})
                 time.sleep(2)
                 st.switch_page("pages/login.py")
             # except Exception as e:

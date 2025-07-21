@@ -44,3 +44,14 @@ def get_userId_logged():
     if "user" in st.session_state:
         return st.session_state["user"]["localId"]
     return None
+
+def decode_array_from_dict(firebase_dict):
+    """
+    Chuyển đổi dict dạng Firebase { "0": ..., "1": ... } về list Python.
+    Tự động sắp xếp theo key tăng dần.
+    """
+    if not isinstance(firebase_dict, dict):
+        return []
+
+    # Sort theo key số (dù key là str, nhưng cần ép về int để đúng thứ tự)
+    return [firebase_dict[k] for k in sorted(firebase_dict.keys(), key=lambda x: int(x))]
